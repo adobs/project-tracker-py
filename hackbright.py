@@ -37,23 +37,41 @@ def make_new_student(first_name, last_name, github):
     Given a first name, last name, and GitHub account, add student to the
     database and print a confirmation message.
     """
-    pass
+    QUERY = """INSERT INTO Students VALUES (:first_name, :last_name, :github)"""
+    db.session.execute(QUERY, {'first_name': first_name, 'last_name': last_name, 'github': github})
+    db.session.commit() 
+    print "Successfully added student: %s %s" % (first_name, last_name)
 
 
 def get_project_by_title(title):
     """Given a project title, print information about the project."""
-    pass
-
+    QUERY = """
+        SELECT * FROM Projects
+        WHERE title = :title
+        """
+    db_cursor = db.session.execute(QUERY, {'title': title}).fetchall()
+    for project_details in db_cursor:
+        id, title, description, max_grade = project_details
+        print "id is {}, title is {}, description is {}, max grade is {}".format(id, title, description, max_grade)
 
 def get_grade_by_github_title(github, title):
-    """Print grade student received for a project."""
-    pass
+    """Print grade student received for a project given a github username and project title."""
+    QUERY = """
+        SELECT grade FROM Grades
+        WHERE student_github = :github AND project_title = :title
+    """
+    db_cursor = db.session.execute(QUERY, {'github': github, 'title': title}).fetchone()
+    print "Github: {}; Project Title: {}; Project Grade: {}".format(github, title, db_cursor[0])
 
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
-    pass
+    QUERY = """
+    INSERT INTO Grades (student_github, project_title, grade) VALUES (:github, :title, :grade)"""
+    db.session.execute(QUERY, {'github': github, 'title': title, 'grade': grade})
+    db.session.commit()
 
+    print "you have successfully added the grade {} to {}'s github for {} project".format(grade, github, title)
 
 def handle_input():
     """Main loop.
@@ -76,6 +94,15 @@ def handle_input():
         elif command == "new_student":
             first_name, last_name, github = args   # unpack!
             make_new_student(first_name, last_name, github)
+
+        elif command == "project":
+            get_project_by_title(args[0])
+
+        elif command == "get_grade_by_github_and_title":
+            get_grade_by_github_title(args[0], args[1])
+
+        elif command == "assign":
+            assign_grade(args[0], args[1], args[2])
 
         else:
             if command != "quit":
