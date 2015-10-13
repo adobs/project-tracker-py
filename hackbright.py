@@ -18,7 +18,7 @@ def connect_to_db(app):
     db.init_app(app)
 
 
-def get_student_by_github(github):
+def get_student_by_github(github_name):
     """Given a github account name, print information about the matching student."""
 
     QUERY = """
@@ -26,7 +26,7 @@ def get_student_by_github(github):
         FROM Students
         WHERE github = :github
         """
-    db_cursor = db.session.execute(QUERY, {'github': github})
+    db_cursor = db.session.execute(QUERY, {'github': github_name})
     row = db_cursor.fetchone()
     print "Student: %s %s\nGithub account: %s" % (row[0], row[1], row[2])
 
@@ -86,9 +86,9 @@ if __name__ == "__main__":
     app = Flask(__name__)
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     # To be tidy, we'll close our database connection -- though, since this
     # is where our program ends, we'd quit anyway.
 
-    # db.session.close()
+    db.session.close()
